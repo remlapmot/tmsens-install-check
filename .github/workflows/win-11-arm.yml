@@ -1,0 +1,67 @@
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+  schedule:
+    - cron: '31 6 * * TUE' # run on Tuesdays at 6:31 UTC
+
+name: Check-install-win-11-arm
+
+permissions: read-all
+
+jobs:
+  R-CMD-check:
+    runs-on: windows-11-arm
+
+    name: windows-11-arm
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
+    steps:
+      - name: Install R and RTools for Windows on ARM and install tmsens
+        run: |
+          # Install R aarch64 4.5.0
+          $url = "https://www.r-project.org/nosvn/winutf8/aarch64/R-4-signed/R-4.5.0-aarch64.exe"
+          Invoke-WebRequest -Uri "$url" -OutFile R-4.5.0-aarch64.exe -UseBasicParsing -UserAgent "NativeHost"
+          Start-Process -FilePath R-4.5.0-aarch64.exe -ArgumentList "/install /norestart /verysilent /SUPPRESSMSGBOXES" -NoNewWindow -Wait
+
+          # Install Rtools45
+          $url = "https://cran.r-project.org/bin/windows/Rtools/rtools45/files/rtools45-aarch64-6536-6492.exe"
+          Invoke-WebRequest -Uri "$url" -OutFile rtools45-aarch64-6536-6492.exe -UseBasicParsing -UserAgent "NativeHost"
+          Start-Process -FilePath rtools45-aarch64-6536-6492.exe -ArgumentList "/install /norestart /verysilent /SUPPRESSMSGBOXES" -NoNewWindow -Wait
+          
+          # Add R and Rtool45 binaries to PATH
+          $ENV:PATH = "C:\Program Files\R-aarch64\R-4.5.0\bin;C:\rtools45-aarch64\usr\bin;$ENV:PATH"
+          
+          # Install pandoc (required for building vignettes)
+          choco install pandoc
+
+          # Install tmsens and report session info
+          $rscript = "Rscript"
+          $arguments = "-e", "print(R.version); install.packages('tmsens', dependencies = TRUE, repos = c('https://cloud.r-project.org/')); library(tmsens); install.packages('sessioninfo', repos = 'https://cloud.r-project.org/'); sessioninfo::session_info(pkgs = 'installed')"
+          & $rscript $arguments
+
+          # Install TinyTeX (required for building vignettes)
+          $args = "-e", "install.packages(c('tinytex'), repos = 'https://cloud.r-project.org/'); tinytex::install_tinytex(); tinytex::tlmgr_install(c('makeindex', 'upquote', 'inconsolata'))"
+          & $rscript $args
+
+          # Add TinyTeX binaries to PATH
+          $ENV:PATH = "C:\Users\runneradmin\AppData\Roaming\TinyTeX\bin\windows;$ENV:PATH"
+          
+          # R CMD check
+          git clone https://github.com/dea-hazewinkel/tmsens.git
+
+          $rscript = "Rscript"
+          $args = "-e", "remove.packages('tmsens')"
+          & $rscript $args
+          
+          $rcmd = "Rcmd"
+          $buildargs = "build", "tmsens"
+          & $rcmd $buildargs
+
+          $checkargs = "check", "--as-cran", "tmsens_0.3.1.tar.gz"
+          & $rcmd $checkargs
