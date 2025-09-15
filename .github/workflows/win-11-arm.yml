@@ -26,13 +26,13 @@ jobs:
         run: |
           # Install R aarch64 4.5.1
           $url = "https://www.r-project.org/nosvn/winutf8/aarch64/R-4-signed/R-4.5.1-aarch64.exe"
-          Invoke-WebRequest -Uri "$url" -OutFile R-4.5.1-aarch64.exe -UseBasicParsing -UserAgent "NativeHost"
-          Start-Process -FilePath R-4.5.1-aarch64.exe -ArgumentList "/install /norestart /verysilent /SUPPRESSMSGBOXES" -NoNewWindow -Wait
+          Invoke-WebRequest -Uri "$url" -OutFile R-aarch64.exe -UseBasicParsing -UserAgent "NativeHost"
+          Start-Process -FilePath R-aarch64.exe -ArgumentList "/install /norestart /verysilent /SUPPRESSMSGBOXES" -NoNewWindow -Wait
 
           # Install Rtools45
           $url = "https://cran.r-project.org/bin/windows/Rtools/rtools45/files/rtools45-aarch64-6608-6492.exe"
-          Invoke-WebRequest -Uri "$url" -OutFile rtools45-aarch64-6536-6492.exe -UseBasicParsing -UserAgent "NativeHost"
-          Start-Process -FilePath rtools45-aarch64-6536-6492.exe -ArgumentList "/install /norestart /verysilent /SUPPRESSMSGBOXES" -NoNewWindow -Wait
+          Invoke-WebRequest -Uri "$url" -OutFile rtools45-aarch64.exe -UseBasicParsing -UserAgent "NativeHost"
+          Start-Process -FilePath rtools45-aarch64.exe -ArgumentList "/install /norestart /verysilent /SUPPRESSMSGBOXES" -NoNewWindow -Wait
           
           # Add R and Rtool45 binaries to PATH
           $ENV:PATH = "C:\Program Files\R-aarch64\R-4.5.1\bin;C:\rtools45-aarch64\usr\bin;$ENV:PATH"
