@@ -63,5 +63,6 @@ jobs:
           $buildargs = "build", "tmsens"
           & $rcmd $buildargs
 
-          $checkargs = "check", "--as-cran", "tmsens_0.3.1.tar.gz"
+          $tarball = Get-ChildItem -Filter "tmsens_*.tar.gz" | Select-Object -First 1 -ExpandProperty Name
+          $checkargs = "check", "--as-cran", $tarball
           & $rcmd $checkargs
