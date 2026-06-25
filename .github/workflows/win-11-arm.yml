@@ -20,7 +20,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-      R_VERSION: "4.6.0"
+      R_VERSION: "4.6.1"
       RTOOLS_BUILD: "rtools45-aarch64-6768-6492"
 
     steps:
